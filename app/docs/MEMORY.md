@@ -2,6 +2,7 @@
 Memoria técnica del proyecto en `app/docs/` (Única Fuente de Verdad - SSOT).
 
 ## Estado actual
+- Repositorio de archivos de prueba (20 de octubre de 2026): después de sincronizar el juego de 207 ZIP, se volvió a excluir `public/ddc-planeamientos/` en `app/.gitignore` para que nuevos ZIP no se agreguen por defecto. Los 207 ZIP ya versionados siguen bajo seguimiento de Git; sus modificaciones continuarían apareciendo y requerirían revisión antes de un futuro commit.
 - Integridad de Español de octavo (20 de octubre de 2026): el usuario sustituyó los dos ZIP `-s1/-s2` por once ZIP numerados `-1` a `-11` y actualizó correctamente `archivos[]`, pero dejó `archivoPrincipal` y `rutaDescarga` apuntando al inexistente `-s1.zip`. Ambos campos se corrigieron a `plan-espanol-octavo-1.zip`. Verificados 11 archivos físicos y 11 anexos únicos. Para publicar el juego de prueba completo, el usuario retiró de `app/.gitignore` la exclusión de `public/ddc-planeamientos/`. Certificación previa a sincronización: 10/10 guardrails, 62/62 pruebas y build correcto.
 - Orden de Grado / Subárea (20 de octubre de 2026): confirmado el orden alfabético español ya implementado en el filtro; no requiere cambio de código.
 - Orden de filtros (20 de octubre de 2026): Oferta Educativa y Asignatura / Área presentan sus opciones por nombre visible en orden alfabético español; el orden de las filas del catálogo no cambia.
