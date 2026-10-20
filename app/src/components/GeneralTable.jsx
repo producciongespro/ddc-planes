@@ -2,9 +2,41 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AsignaturaIcon, IconTable, IconDownload, IconSearch, IconFilter, IconRefresh } from './Icons';
 import { ColumnFilter } from './ColumnFilter';
 
+const ordenPreescolar = [
+  'Materno Infantil (Interactivo I)',
+  'Interactivo II',
+  'Transición',
+  'Grupo Heterogéneo'
+];
+
+const ordenarGrados = (a, b) => {
+  const indicePreescolarA = ordenPreescolar.indexOf(a);
+  const indicePreescolarB = ordenPreescolar.indexOf(b);
+  if (indicePreescolarA !== -1 || indicePreescolarB !== -1) {
+    if (indicePreescolarA === -1) return 1;
+    if (indicePreescolarB === -1) return -1;
+    return indicePreescolarA - indicePreescolarB;
+  }
+
+  const numeroA = Number(a.match(/\bAño \((\d{1,2})°\)$/)?.[1]);
+  const numeroB = Number(b.match(/\bAño \((\d{1,2})°\)$/)?.[1]);
+  const esAnioA = numeroA >= 1 && numeroA <= 12;
+  const esAnioB = numeroB >= 1 && numeroB <= 12;
+  if (esAnioA || esAnioB) {
+    if (!esAnioA) return 1;
+    if (!esAnioB) return -1;
+    return numeroA - numeroB;
+  }
+
+  return a.localeCompare(b, 'es');
+};
+
 export function GeneralTable({
   planes,
   onDownload,
+  onDownloadAll,
+  downloadingId,
+  downloadNotice,
   filtros,
   onFiltrosChange,
   onResetFiltros
@@ -52,7 +84,7 @@ export function GeneralTable({
       countMap.set(p.grado, (countMap.get(p.grado) || 0) + 1);
     });
     return Array.from(countMap.keys())
-      .sort((a, b) => a.localeCompare(b, 'es'))
+      .sort(ordenarGrados)
       .map((g) => ({ value: g, count: countMap.get(g) }));
   }, [planes, filtros.ofertas, filtros.asignaturas]);
 
@@ -120,6 +152,12 @@ export function GeneralTable({
     ];
   }, [paginaActual, totalPaginas]);
 
+  const paginasMoviles = useMemo(() => {
+    const cantidad = Math.min(3, totalPaginas);
+    const inicio = Math.max(1, Math.min(paginaActual - 1, totalPaginas - cantidad + 1));
+    return Array.from({ length: cantidad }, (_, indice) => inicio + indice);
+  }, [paginaActual, totalPaginas]);
+
   const planesPaginados = useMemo(() => {
     if (elementosPorPagina === 'todos') return planesFiltrados;
     const inicio = (paginaActual - 1) * limite;
@@ -164,9 +202,11 @@ export function GeneralTable({
   const getBadgeColor = (color) => {
     switch (color) {
       case 'amber':
-        return 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+        return 'bg-orange-100 dark:bg-orange-950/80 text-red-800 dark:text-red-300 border-orange-300 dark:border-orange-800';
       case 'blue':
         return 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800';
+      case 'yellow':
+        return 'bg-yellow-50 dark:bg-yellow-950/80 text-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-800';
       case 'indigo':
         return 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800';
       case 'teal':
@@ -295,7 +335,7 @@ export function GeneralTable({
           </button>
         </div>
       ) : (
-        <div className="w-full overflow-x-auto min-h-[480px] pb-32">
+        <div className="w-full overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300 border-collapse table-auto">
             <thead className="bg-slate-100/90 dark:bg-slate-800/80 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
               <tr>
@@ -374,7 +414,7 @@ export function GeneralTable({
                       {doc.grado}
                     </td>
 
-                    {/* Archivos Disponibles (soporte multi-archivo y descarga individual) */}
+                    {/* Archivos disponibles: descargas individuales y, al final, lote de la misma fila */}
                     <td className="py-2.5 px-3">
                       <div className="flex flex-wrap items-center gap-1.5">
                         {doc.archivos && doc.archivos.length > 0 ? (
@@ -396,7 +436,24 @@ export function GeneralTable({
                         ) : (
                           <span className="text-xs text-slate-400 italic">Sin archivos</span>
                         )}
+                        {doc.archivos?.length >= 2 && (
+                          <button
+                            type="button"
+                            onClick={() => onDownloadAll(doc)}
+                            disabled={Boolean(downloadingId)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            title={`Solicitar la descarga de los ${doc.archivos.length} archivos de ${doc.asignatura}, ${doc.grado}`}
+                          >
+                            <IconDownload className="w-3 h-3" />
+                            {downloadingId === doc.id ? 'Solicitando...' : `Descargar todos (${doc.archivos.length})`}
+                          </button>
+                        )}
                       </div>
+                      {downloadNotice?.id === doc.id && (
+                        <p role="status" className="mt-1 text-[11px] text-blue-800 dark:text-blue-300">
+                          {downloadNotice.message}
+                        </p>
+                      )}
                     </td>
 
                   </tr>
@@ -409,22 +466,24 @@ export function GeneralTable({
 
       {/* 4. PAGINACIÓN */}
       {elementosPorPagina !== 'todos' && totalPaginas > 1 && (
-        <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
+        <div className="px-2.5 py-3.5 sm:p-3.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
           <div>
             Página <strong className="text-slate-900 dark:text-white">{paginaActual}</strong> de{' '}
             <strong className="text-slate-900 dark:text-white">{totalPaginas}</strong> ({planesFiltrados.length} planeamientos)
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+          <nav aria-label="Paginación del catálogo" className="flex items-center gap-1 sm:gap-1.5 justify-center whitespace-nowrap sm:whitespace-normal sm:flex-wrap">
             {/* Botón Primero */}
             <button
               type="button"
               disabled={paginaActual === 1}
               onClick={() => setPaginaActual(1)}
-              className="px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              aria-label="Ir a la primera página"
+              className="w-[34px] h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 inline-flex items-center justify-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
               title="Ir a la primera página"
             >
-              « Primero
+              <svg aria-hidden="true" className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5v14M18 6l-6 6 6 6M11 6l-6 6 6 6" /></svg>
+              <span className="hidden sm:inline">« Primero</span>
             </button>
 
             {/* Botón Anterior */}
@@ -432,18 +491,41 @@ export function GeneralTable({
               type="button"
               disabled={paginaActual === 1}
               onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
-              className="px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              aria-label="Página anterior"
+              className="w-[34px] h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 inline-flex items-center justify-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
               title="Página anterior"
             >
-              ‹ Anterior
+              <svg aria-hidden="true" className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 6-6 6 6 6" /></svg>
+              <span className="hidden sm:inline">‹ Anterior</span>
             </button>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 sm:hidden">
+              {paginasMoviles.map((pNum) => (
+                <button
+                  key={`pag-mobile-${pNum}`}
+                  type="button"
+                  onClick={() => setPaginaActual(pNum)}
+                  aria-label={`Ir a la página ${pNum}`}
+                  aria-current={paginaActual === pNum ? 'page' : undefined}
+                  className={`w-[34px] h-9 rounded-md font-semibold text-xs transition cursor-pointer ${
+                    paginaActual === pNum
+                      ? 'bg-blue-700 text-white shadow-xs'
+                      : 'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {pNum}
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-1">
               {paginasVisibles.map((pNum) => (
                 <button
                   key={`pag-btn-${pNum}`}
                   type="button"
                   onClick={() => setPaginaActual(pNum)}
+                  aria-label={`Ir a la página ${pNum}`}
+                  aria-current={paginaActual === pNum ? 'page' : undefined}
                   className={`w-7 h-7 rounded-md font-semibold text-xs transition cursor-pointer ${
                     paginaActual === pNum
                       ? 'bg-blue-700 text-white shadow-xs'
@@ -460,10 +542,12 @@ export function GeneralTable({
               type="button"
               disabled={paginaActual === totalPaginas}
               onClick={() => setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))}
-              className="px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              aria-label="Página siguiente"
+              className="w-[34px] h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 inline-flex items-center justify-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
               title="Página siguiente"
             >
-              Siguiente ›
+              <svg aria-hidden="true" className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+              <span className="hidden sm:inline">Siguiente ›</span>
             </button>
 
             {/* Botón Último */}
@@ -471,12 +555,14 @@ export function GeneralTable({
               type="button"
               disabled={paginaActual === totalPaginas}
               onClick={() => setPaginaActual(totalPaginas)}
-              className="px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              aria-label="Ir a la última página"
+              className="w-[34px] h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-1 inline-flex items-center justify-center rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
               title="Ir a la última página"
             >
-              Último »
+              <svg aria-hidden="true" className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 5v14M6 6l6 6-6 6M13 6l6 6-6 6" /></svg>
+              <span className="hidden sm:inline">Último »</span>
             </button>
-          </div>
+          </nav>
         </div>
       )}
     </section>

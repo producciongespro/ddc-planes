@@ -79,21 +79,25 @@ Proveer a todo el cuerpo docente de Costa Rica un canal institucional centraliza
 ### RF-04: Filtros Multidimensionales en Cabeceras de Columna (`ColumnFilter`)
 - **Descripción:** Menús popover flotantes integrados en los encabezados `<th>` de las columnas *Oferta Educativa*, *Asignatura* y *Grado*.
 - **Comportamiento:**
-  - Las opciones de *Oferta Educativa*, *Asignatura / Área* y *Grado / Subárea* se presentan alfabéticamente por su nombre visible, según el idioma español.
+  - Las opciones de *Oferta Educativa* y *Asignatura / Área* se presentan alfabéticamente por su nombre visible, según el idioma español. *Grado / Subárea* sigue la progresión académica: Materno Infantil (Interactivo I), Interactivo II, Transición, Grupo Heterogéneo y los años individuales de 1° a 12° en orden numérico; las demás categorías y subáreas aparecen después en orden alfabético español. Este orden solo afecta las opciones disponibles del filtro, sin reordenar las filas del catálogo ni alterar sus conteos o selecciones.
   - Operación en modo **borrador (draft)**: El usuario puede marcar/desmarcar opciones sin alterar la tabla hasta que presione explícitamente el botón **"Aplicar Filtro"**.
   - Opciones de acción rápida: Botones para **"Marcar todas"**, **"Desmarcar todas"** y **"Cancelar"**.
   - Buscador interno dentro del popover para listas largas de opciones.
   - Indicador visual destacado en el encabezado de la columna cuando tiene un filtro activo.
+  - Los menús flotan sobre la tabla y se mantienen visibles en pantallas estrechas sin reservar altura vacía bajo los resultados.
 
-### RF-05: Descarga individual desde el catálogo
-- **Descripción:** Cada documento se descarga desde su chip de archivo.
+### RF-05: Descarga individual y múltiple por planeamiento
+- **Descripción:** Cada documento se descarga desde su chip de archivo; los registros con dos o más archivos ofrecen además una acción para solicitar todos los de esa fila.
 - **Comportamiento:**
   - **Descarga desde la tabla:** La tabla presenta cuatro columnas (*Oferta Educativa*, *Asignatura*, *Grado* y *Archivos*). Cada chip de la columna *Archivos* descarga exclusivamente el archivo seleccionado. No se muestran columnas de *Descargas* ni *Acción*.
+  - **Descargar todos:** El botón «Descargar todos (N)» aparece inmediatamente después del último chip dentro de la misma celda y secuencia flexible, también en móvil. Solo se muestra si hay al menos dos archivos. Solicita las descargas de esa fila de forma escalonada e impide repetir la acción mientras se despachan; el navegador puede requerir permiso para descargas múltiples.
+  - **Altura de la tabla:** Cuando el filtro deja uno o pocos registros, el contenedor se ajusta al contenido sin una altura mínima ni relleno inferior permanente.
 
 ### RF-07: Paginador Seguro con Ventana Deslizante
+- En anchos menores de 640 px, los cuatro controles de navegación muestran solo iconos con nombres accesibles y hasta tres números alrededor de la página actual, en una sola fila. Desde 640 px se conservan las etiquetas y hasta siete números. Los extremos mantienen sus estados deshabilitados.
 - **Descripción:** Controles de navegación en tabla con selector de filas por página (`15`, `20`, `50`, `Todos`).
 - **Comportamiento:**
-  - Ventana deslizante matemática de 5 páginas adyacentes a la actual.
+  - Ventana deslizante matemática de hasta tres páginas en móvil y siete en escritorio, manteniendo visible la página actual.
   - Botones de salto rápido: **« Primero**, **‹ Anterior**, **Siguiente ›** y **Último »**.
   - Generación de claves DOM únicas (`pag-btn-${pNum}`) para evitar duplicación de nodos y errores de renderizado.
 
@@ -112,7 +116,7 @@ Proveer a todo el cuerpo docente de Costa Rica un canal institucional centraliza
 
 | Identificador | Requisito | Criterio de Aceptación |
 | :--- | :--- | :--- |
-| **RNF-01** | **Arquitectura App Shell** | Header fijo (`z-20`), Footer fijo (`z-20`). El único contenedor con barra de desplazamiento es el cuerpo central (`flex-1 overflow-y-auto`). Prohibido cualquier scroll horizontal en resoluciones desde 320px hasta 4K. |
+| **RNF-01** | **Arquitectura App Shell** | Header fijo (`z-20`), Footer fijo (`z-20`). El desplazamiento vertical ocurre en el cuerpo central (`flex-1 overflow-y-auto`). La página no debe desbordar horizontalmente entre 320px y 4K; la tabla puede tener desplazamiento horizontal local en pantallas estrechas. |
 | **RNF-02** | **Rendimiento y Peso** | El bundle JavaScript final compilado (`dist/assets/*.js`) no debe exceder los 300 KB. El tiempo de carga interactivo (LCP) debe ser inferior a 1.2 segundos sobre conexiones estándar. |
 | **RNF-03** | **Portabilidad y Despliegue** | 100% estático. Debe ejecutarse de manera idéntica en Apache, NGINX, Azure Static Web Apps, AWS S3, IIS o GitHub Pages sin requerir motores PHP, Node.js ni bases de datos en el servidor de producción. |
 | **RNF-04** | **Tratamiento y Accesibilidad** | Redacción formal dirigida al usuario mediante tratamiento de respeto de «usted» (*«seleccione»*, *«consulte»*, *«descargue»*). Contraste de colores apto para estándar WCAG AA. |
@@ -164,13 +168,13 @@ interface PlaneamientoCurricular2027 {
 
 | # | Código | Oferta Curricular Oficial | Color Temático | Distribución de Registros |
 | :---: | :--- | :--- | :---: | :--- |
-| **1** | `PREESCOLAR` | **Educación Preescolar** | Ámbar (`amber`) | Materno Infantil (Interactivo I) y Transición (Interactivo II). |
-| **2** | `PRIMARIA` | **I y II Ciclos** | Esmeralda (`emerald`) | Primaria regular de 1° a 6° año (todas las asignaturas básicas y complementarias). |
-| **3** | `SECUNDARIA` | **III Ciclo y Educación Diversificada** | Azul (`blue`) | Secundaria Académica y Técnica de 7° a 11°/12° año. |
-| **4** | `EPJA` | **Educación de Personas Jóvenes y Adultas** | Índigo (`indigo`) | Orientaciones y guías modulares para IPEC y CINDEA. |
+| **1** | `PREESCOLAR` | **Educación Preescolar** | Turquesa (`teal`) | Materno Infantil (Interactivo I) y Transición (Interactivo II). |
+| **2** | `I-II-CICLOS` | **I y II Ciclos** | Anaranjado pastel con texto rojizo (clave `amber`) | Primaria regular de 1° a 6° año (todas las asignaturas básicas y complementarias). |
+| **3** | `III-DIVERSIFICADA` | **III Ciclo y Educación Diversificada** | Azul (`blue`) | Secundaria Académica y Técnica de 7° a 11°/12° año. |
+| **4** | `EPJA` | **Educación de Personas Jóvenes y Adultas** | Amarillo pastel (`yellow`) con texto oliva oscuro | Orientaciones y guías modulares para IPEC y CINDEA. |
 | **5** | `ESPECIAL` | **Educación Especial** | Rosa (`rose`) | Centros Especiales, Aula Integrada, Audición, Lenguaje, PNV y Primera Infancia. |
-| **6** | `INTERCULTURAL` | **Educación Intercultural** | Cian (`cyan`) | Culturas y Lenguas Indígenas oficiales: Bribri, Cabécar, Boruca, Ngäbe y Maleku. |
-| **7** | `UNIDOCENTES` | **Escuelas Unidocentes** | Violeta (`violet`) | Programas multigrado adaptados de 1° a 6° año de primaria rural. |
+| **6** | `INTERCULTURAL` | **Educación Intercultural** | Violeta (`purple`) | Culturas y Lenguas Indígenas oficiales: Bribri, Cabécar, Boruca, Ngäbe y Maleku. |
+| **7** | `UNIDOCENTES` | **Escuelas Unidocentes** | Verde (`emerald`) | Programas multigrado adaptados de 1° a 6° año de primaria rural. |
 
 **Total Auditado:** 197 carpetas y registros oficiales.
 
@@ -189,6 +193,6 @@ Estas reglas son obligatorias y no pueden ser alteradas por ningún desarrollado
 4. **BLINDAJE DE CODIFICACIÓN UTF-8 SIN BOM:**
    - Cualquier archivo generado o editado debe garantizar codificación UTF-8 sin BOM para prevenir el mojibake.
 5. **PRESERVACIÓN DEL APP SHELL:**
-   - El Header y Footer deben permanecer fijos en la pantalla (`flex-shrink-0 z-20`). El único scroll permitido es el vertical en el área de contenido principal (`flex-1 overflow-y-auto`).
+   - El Header y Footer deben permanecer fijos en la pantalla (`flex-shrink-0 z-20`). El desplazamiento vertical principal ocurre en el área de contenido (`flex-1 overflow-y-auto`); el desplazamiento horizontal local de la tabla no debe causar desbordamiento de la página.
 6. **ÚNICA FUENTE DE VERDAD (SSOT):**
    - Cualquier cambio en la arquitectura, requisitos o estructura debe actualizarse prioritariamente en `app/docs/spec.md` y documentarse en `app/docs/MEMORY.md`.

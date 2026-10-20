@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { fetchPlanesCatalog } from './data/planes2027Data';
 import { Header } from './components/Header';
 import { GeneralTable } from './components/GeneralTable';
@@ -11,6 +11,9 @@ export default function App() {
   const [planes, setPlanes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
+  const [downloadNotice, setDownloadNotice] = useState(null);
+  const bulkInProgress = useRef(false);
 
   // Carga asíncrona desacoplada del catálogo curricular oficial desde /data/ddc-planeamientos.json
   const cargarCatalogo = async () => {
@@ -100,6 +103,30 @@ export default function App() {
     if (fileObj) triggerBrowserDownload(fileObj.ruta, fileObj.nombre);
   };
 
+  // El navegador puede limitar las descargas múltiples; solo confirmamos que se solicitaron.
+  const handleDownloadAll = async (doc) => {
+    const files = Array.isArray(doc.archivos) ? doc.archivos : [];
+    if (files.length < 2 || bulkInProgress.current) return;
+    bulkInProgress.current = true;
+    setDownloadingId(doc.id);
+    setDownloadNotice(null);
+    try {
+      for (const [index, file] of files.entries()) {
+        if (index > 0) await new Promise((resolve) => setTimeout(resolve, 350));
+        triggerBrowserDownload(file.ruta, file.nombre);
+      }
+      setDownloadNotice({
+        id: doc.id,
+        message: `Se solicitaron ${files.length} descargas. Si el navegador solicita permiso para descargar varios archivos, permítalo.`
+      });
+    } catch {
+      setDownloadNotice({ id: doc.id, message: 'No se pudieron solicitar todas las descargas. Descargue los archivos individualmente.' });
+    } finally {
+      bulkInProgress.current = false;
+      setDownloadingId(null);
+    }
+  };
+
   // Limpiar todos los filtros activos
   const handleResetFiltros = () => {
     setFiltros({
@@ -146,6 +173,9 @@ export default function App() {
           <GeneralTable
             planes={planes}
             onDownload={handleDownload}
+            onDownloadAll={handleDownloadAll}
+            downloadingId={downloadingId}
+            downloadNotice={downloadNotice}
             filtros={filtros}
             onFiltrosChange={setFiltros}
             onResetFiltros={handleResetFiltros}

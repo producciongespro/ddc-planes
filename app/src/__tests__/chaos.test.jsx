@@ -33,6 +33,29 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
     clickSpy.mockRestore();
   });
 
+  it('solicita en orden todos los ZIP de una fila sin registrar estadísticas', async () => {
+    const archivos = [1, 2].map((n) => ({ nombre: `plan-${n}.zip`, tipo: 'ZIP', ruta: `/ddc-planeamientos/plan-${n}.zip`, tamanoLegible: '1 KB' }));
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{
+        id: 'DDC-2027-001', ofertaNombre: 'Educación Preescolar',
+        asignatura: 'Matemática', grado: 'Transición', archivos
+      }]
+    });
+    const rutasSolicitadas = [];
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+      rutasSolicitadas.push(this.getAttribute('href'));
+    });
+
+    render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Descargar todos (2)' }));
+    expect(screen.getByRole('button', { name: 'Solicitando...' })).toBeDisabled();
+    await waitFor(() => expect(rutasSolicitadas).toEqual(archivos.map((archivo) => archivo.ruta)));
+    expect(await screen.findByRole('status')).toHaveTextContent('Se solicitaron 2 descargas');
+    expect(localStorage.getItem('mep-ddc-planes-2027-downloads')).toBeNull();
+    clickSpy.mockRestore();
+  });
+
   it('CHAOS-01: Caída abrupta de red (Failed to fetch / Offline) muestra contingencia sin pantalla blanca', async () => {
     global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
 
