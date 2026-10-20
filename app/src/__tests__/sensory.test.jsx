@@ -22,7 +22,6 @@ const mockSamplePlanes = [
     ],
     archivoPrincipal: 'plan-interactivo-i.zip',
     rutaDescarga: '/ddc-planeamientos/preescolar/interactivo-i/plan-interactivo-i.zip',
-    descargas: 14,
     vigencia: '2027'
   }
 ];
@@ -80,6 +79,8 @@ describe('Suite 7: sensory (Arnés Sensorial, Accesibilidad Ley 7600 y WCAG AA)'
     // Encabezado maestro H1 accesible
     const h1 = screen.getByRole('heading', { level: 1 });
     expect(h1).toBeInTheDocument();
+    expect(h1.closest('header')).toBeInTheDocument();
+    expect(screen.getByRole('main').querySelector('h1')).toBeNull();
   });
 
   it('SENS-03: Navegabilidad pura por teclado (Cero tabIndex negativo en controles primarios)', () => {

@@ -12,26 +12,14 @@ export function GeneralTable({
   const [paginaActual, setPaginaActual] = useState(1);
   const [elementosPorPagina, setElementosPorPagina] = useState(20);
 
-  // 1. Lista de Ofertas Educativas con conteo ordenadas según estructura oficial DDC
+  // 1. Ofertas educativas con conteo, ordenadas por su nombre visible
   const ofertasDisponibles = useMemo(() => {
-    const orden = [
-      'Educación Preescolar',
-      'I y II Ciclos (Primaria)',
-      'III Ciclo y Diversificada (Secundaria)',
-      'Educación de Personas Jóvenes y Adultas (EPJA)',
-      'Educación Especial',
-      'Educación Intercultural',
-      'Educación Unidocente'
-    ];
     const map = new Map();
-    orden.forEach((o) => map.set(o, 0));
     planes.forEach((p) => {
-      if (map.has(p.ofertaNombre)) {
-        map.set(p.ofertaNombre, map.get(p.ofertaNombre) + 1);
-      }
+      if (p.ofertaNombre) map.set(p.ofertaNombre, (map.get(p.ofertaNombre) || 0) + 1);
     });
-    return orden
-      .filter((o) => map.get(o) > 0)
+    return Array.from(map.keys())
+      .sort((a, b) => a.localeCompare(b, 'es'))
       .map((o) => ({ value: o, count: map.get(o) }));
   }, [planes]);
 
@@ -83,7 +71,10 @@ export function GeneralTable({
         return false;
       }
       if (textoNormalizado) {
-        const busquedaFuente = `${doc.ofertaNombre} ${doc.asignatura} ${doc.grado} ${doc.archivoPrincipal || ''}`.toLowerCase();
+        const nombresArchivos = Array.isArray(doc.archivos)
+          ? doc.archivos.map((archivo) => archivo?.nombre || '').join(' ')
+          : '';
+        const busquedaFuente = `${doc.ofertaNombre || ''} ${doc.asignatura || ''} ${doc.grado || ''} ${doc.archivoPrincipal || ''} ${nombresArchivos}`.toLowerCase();
         if (!busquedaFuente.includes(textoNormalizado)) return false;
       }
       return true;
@@ -201,7 +192,7 @@ export function GeneralTable({
               <IconTable className="w-5 h-5" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-              1. Catálogo Oficial de Planeamientos
+              Catálogo Oficial de Planeamientos
             </h2>
           </div>
           <p className="text-slate-300 text-xs sm:text-sm max-w-2xl">
@@ -346,15 +337,6 @@ export function GeneralTable({
                   Archivos
                 </th>
 
-                {/* 5. Columna Descargas */}
-                <th scope="col" className="py-2.5 px-2 text-center w-24 text-[11px] font-bold tracking-wider uppercase text-slate-700 dark:text-slate-200">
-                  Descargas
-                </th>
-
-                {/* 6. Columna Acción */}
-                <th scope="col" className="py-2.5 px-2 text-center w-20 text-[11px] font-bold tracking-wider uppercase text-slate-700 dark:text-slate-200">
-                  Acción
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
@@ -417,40 +399,6 @@ export function GeneralTable({
                       </div>
                     </td>
 
-                    {/* Contador de Descargas */}
-                    <td className="py-2.5 px-2 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-slate-800 text-blue-900 dark:text-amber-400 border border-blue-200 dark:border-slate-700">
-                        <IconDownload className="w-3 h-3 text-blue-600 dark:text-amber-400" />
-                        {doc.descargas}
-                      </span>
-                    </td>
-
-                    {/* Botón de Acción: Descarga completa (1 archivo o lote de todos los archivos) */}
-                    <td className="py-2.5 px-2 text-center whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => onDownload(doc)}
-                        className={`relative p-2 inline-flex items-center justify-center rounded-lg text-white bg-blue-700 hover:bg-blue-600 active:bg-blue-800 shadow-xs hover:shadow transition-all cursor-pointer ${
-                          doc.archivos && doc.archivos.length > 1 ? 'ring-2 ring-amber-400/60' : ''
-                        }`}
-                        title={
-                          doc.archivos && doc.archivos.length > 1
-                            ? `Descargar los ${doc.archivos.length} archivos de ${doc.asignatura}`
-                            : `Descargar archivo: ${doc.archivoPrincipal || doc.asignatura}`
-                        }
-                        aria-label={`Descargar paquete oficial: ${doc.asignatura}`}
-                      >
-                        <IconDownload className="w-4 h-4" />
-                        {doc.archivos && doc.archivos.length > 1 && (
-                          <span
-                            className="absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs"
-                            title={`Esta fila contiene ${doc.archivos.length} archivos`}
-                          >
-                            {doc.archivos.length}
-                          </span>
-                        )}
-                      </button>
-                    </td>
                   </tr>
                 );
               })}

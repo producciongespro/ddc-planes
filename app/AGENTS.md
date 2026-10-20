@@ -62,27 +62,21 @@ Aplicación web profesional oficial tipo Repositorio Curricular Digital para que
    - Manejo de contingencia por desconexión o fallo HTTP con botón de reintento.
 2. **Encabezado Institucional Fijo (`Header.jsx`):**
    - Identidad visual oficial MEP / DDC (`header.jpg`).
-   - Métricas globales en vivo (total de planeamientos y total nacional de descargas).
    - Botón institucional "Acerca de" con modal informativo (`AboutModal.jsx`).
    - Botón toggle de tema Claro / Oscuro con persistencia en `localStorage`.
-   - Botón de mantenimiento "Reiniciar datos" con modal de confirmación (`ResetConfirmModal.jsx`).
-3. **Banner Institucional Compacto (`WelcomeHero.jsx`):**
-   - Franja de bienvenida y acreditación curricular aprobada por el CSE.
-4. **Sección 1 (Hero Maestro) - Catálogo Oficial 2027 (`GeneralTable.jsx`):**
+3. **Encabezado de tres secciones:** Logo MEP a la izquierda, título y descripción al centro, y controles de tema, Acerca de y Califícame a la derecha.
+4. **Catálogo Oficial 2027 (`GeneralTable.jsx`):**
    - **Encabezado Institucional:** Título oficial y subtítulo normativo de la DDC.
    - **Barra de Herramientas Unificada (Opción A):** Franja de una sola fila compacta con buscador predictivo libre, métricas, botón "Restablecer" y selector de paginado (`15`, `20`, `50`, `Todos`).
    - **Filtros por Columna con Checkboxes (`ColumnFilter.jsx`):** Popovers flotantes multiselección con estado borrador (draft), botones *Aplicar*, *Cancelar*, *Marcar todas* y *Desmarcar todas*.
-   - **Tabla interactiva de 6 columnas (sin columna Código):** Columnas *Oferta Educativa*, *Asignatura* (con icono vectorial temático), *Grado*, *Archivos* (chips interactivos individuales con tamaño en KB/MB), *Descargas* y **botón azul zafiro compacto con badge numérico para descarga de paquete completo**.
+   - **Tabla interactiva de 4 columnas:** *Oferta Educativa*, *Asignatura* (con icono vectorial temático), *Grado* y *Archivos* (chips interactivos individuales con tamaño en KB/MB y descarga directa).
    - **Paginador matemático seguro:** Ventana deslizante (`paginasVisibles`) con botones *« Primero*, *‹ Anterior*, numéricos, *Siguiente ›* y *Último »*.
-5. **Sección 2 - Top de Descargas Docentes (`TopDownloads.jsx`):**
-   - Podio nacional de los planeamientos más descargados con botón directo.
-6. **Pie de Página Fijo (`Footer.jsx`):**
+5. **Pie de Página Fijo (`Footer.jsx`):**
    - Fondo transparente con imagen institucional `footer.jpg` escalada al 100% (`bg-cover`) y badge oficial con versión `1.0.1`.
 
 ## Datos y Persistencia
 - **Catálogo Maestro:** Reside exclusivamente en `app/public/data/ddc-planeamientos.json` (rutas relativas universales, sin rutas físicas de Windows).
-- **Persistencia Ligera en `localStorage`:** Clave `mep-ddc-planes-2027-downloads` que almacena únicamente el mapa `{ [id]: conteoDescargas }`.
-- **Clave interna oculta:** La clave técnica de almacenamiento es exclusivamente de uso interno; nunca debe exponerse en textos visibles.
+- **Persistencia de preferencia visual:** Solo el tema se guarda en `localStorage` con la clave `mep-theme`. No se registran descargas.
 
 ## Convenciones de Código y Calidad
 - **Tratamiento en UI:** Todo texto dirigido a la persona usuaria debe emplear tratamiento formal de usted («seleccione», «consulte», «descargue»).

@@ -60,9 +60,7 @@ Garantizar la **estabilidad, resiliencia y cero regresiones** del Repositorio Cu
 - **TEST-01:** `fetchPlanesCatalog()` consulta exitosamente `/data/ddc-planeamientos.json` y devuelve los 197 registros curriculares.
 - **TEST-02:** `fetchPlanesCatalog()` adjunta cabeceras anti-caché (`cache: 'no-cache'`, `Pragma: no-cache`) y parámetro temporal `_t`.
 - **TEST-03:** Manejo de contingencia: si el servidor retorna un error HTTP (ej. 404 o 500) o un JSON no válido, la función lanza una excepción descriptiva en español sin romper la ejecución.
-- **TEST-04:** `loadSavedDownloadsMap()` recupera correctamente el diccionario `{ [id]: conteo }` desde `localStorage`.
-- **TEST-05:** Migración retrocompatible: si el cliente posee datos en la clave antigua `mep-ddc-planes-2027`, los contadores se extraen, se guardan en `mep-ddc-planes-2027-downloads` y la clave obsoleta es purgada.
-- **TEST-06:** `saveDownloadsToStorage()` persiste el mapa numérico sin almacenar información innecesaria de texto ni rutas en el navegador.
+- **TEST-04:** La consulta devuelve el catálogo sin leer ni escribir estadísticas locales.
 
 ### Suite 2: `GeneralTable.test.jsx` (Paginación Matemática y Filtros)
 - **TEST-07:** El paginador calcula con exactitud matemática las páginas visibles (ventana deslizante de 5) sin generar **números duplicados** en ningún caso de borde (primera página, página intermedia, última página).
@@ -77,7 +75,7 @@ Garantizar la **estabilidad, resiliencia y cero regresiones** del Repositorio Cu
 - **TEST-14:** `SplashScreen` se renderiza de forma predeterminada mientras el estado `isLoading` sea `true`.
 - **TEST-15:** Si ocurre un fallo de conexión, `SplashScreen` conmuta a la vista de error mostrando la tarjeta de contingencia y el botón **"Reintentar conexión"**.
 - **TEST-16:** Presionar el botón de reintento dispara una nueva invocación a la función de carga.
-- **TEST-17:** La descarga de un planeamiento individual (chip de archivo) o en lote (botón principal) incrementa de forma reactiva el contador de descargas de ese registro.
+- **TEST-17:** El chip de archivo descarga únicamente el documento seleccionado, sin registrar estadísticas.
 
 ### Suite 4: `guardrails.test.js` (Auditoría Automatizada de Seguridad y Arnés)
 - **TEST-18 (Anti-Mojibake):** Escaneo recursivo de todo el proyecto certificando que ningún archivo contenga secuencias de caracteres UTF-8 corruptos (`Ã¡`, `Ã©`, `Ã­`, `Ã³`, `Ãº`, `Ã±`, `Â°`, `â€“`).
@@ -127,7 +125,7 @@ Garantizar la **estabilidad, resiliencia y cero regresiones** del Repositorio Cu
 - **CHAOS-03 (JSON Corrupto en Servidor):** Simula sintaxis malformada en `ddc-planeamientos.json` (`SyntaxError`). Captura el fallo sin romper el ciclo de vida de React.
 - **CHAOS-04 (Códigos HTTP 500 / 502 Bad Gateway):** Verifica la presentación clara del código de error al usuario.
 - **CHAOS-05 (Payload No Tabular):** Rechazo defensivo y mensaje explícito cuando el servidor entrega un objeto o valor nulo en vez de un arreglo.
-- **CHAOS-06 (Saturación de Almacenamiento):** Simula `QuotaExceededError` en `localStorage.setItem`. Certifica que la aplicación continúe operando en memoria y permitiendo descargas.
+- **CHAOS-06:** Retirado al eliminar el almacenamiento de estadísticas; la preferencia de tema conserva su manejo defensivo independiente.
 - **CHAOS-07 (Tolerancia a Registros Nulos/Corruptos):** Inyección de datos incompletos (`archivos: null`, grados nulos). Certifica renderizado defensivo sin excepciones de `Cannot read properties of undefined/null`.
 - **CHAOS-08 (Ráfaga Frenética de Clics):** Ráfaga masiva de clics en menos de 50ms al botón de descarga. Certifica consistencia y ausencia de duplicaciones anómalas.
 

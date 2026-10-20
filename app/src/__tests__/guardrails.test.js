@@ -125,12 +125,10 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
   });
 
   it('TEST-21: Certificación de tratamiento de respeto institucional («usted»)', () => {
-    const welcomeHeroPath = path.join(srcDir, 'components/WelcomeHero.jsx');
-    if (fs.existsSync(welcomeHeroPath)) {
-      const content = fs.readFileSync(welcomeHeroPath, 'utf8');
-      expect(content).not.toMatch(/\btu planeamiento\b/i);
-      expect(content).not.toMatch(/\bdescarga tus\b/i);
-    }
+    const headerPath = path.join(srcDir, 'components/Header.jsx');
+    const content = fs.readFileSync(headerPath, 'utf8');
+    expect(content).not.toMatch(/\btu planeamiento\b/i);
+    expect(content).not.toMatch(/\bdescarga tus\b/i);
   });
 
   it('TEST-25: Certificación de Rutas Web Limpias y Kebab-case (Cero puntos en carpetas y cero espacios en URLs)', () => {

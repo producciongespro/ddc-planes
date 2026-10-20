@@ -19,6 +19,12 @@
 
 ## 1. Contexto Institucional y Propósito
 
+El encabezado presenta tres secciones: logo MEP a la izquierda, título principal
+«Repositorio de Planeamientos Curriculares» centrado, y los controles de tema,
+Acerca de y Califícame a la derecha. La descripción curricular se muestra como
+ayuda flotante al pasar el puntero o enfocar el título. El contenido
+principal comienza directamente con el catálogo filtrable.
+
 ### Coordinación de desarrollo
 El contrato operativo de agentes está en `app/docs/agents.md`. El agente principal
 coordina tres perfiles persistentes (`implementador`, `qa_tester`,
@@ -55,41 +61,34 @@ Proveer a todo el cuerpo docente de Costa Rica un canal institucional centraliza
 - **Comportamiento:**
   - Ejecuta un `fetch('/data/ddc-planeamientos.json?_t=[timestamp]', { cache: 'no-cache' })`.
   - Permite la actualización en caliente ("hot-update") de materias, rutas o anexos directamente en el servidor sin necesidad de recompilar la aplicación (`npm run build`).
-  - Si la petición es exitosa, inicializa el catálogo en memoria y fusiona los contadores de descargas persistidos en el cliente.
+  - Si la petición es exitosa, inicializa el catálogo en memoria sin estadísticas de uso.
 
 ### RF-02: Pantalla de Carga Institucional (Splash Screen) y Resiliencia de Red
 - **Descripción:** Mientras los datos son consultados por red, la interfaz muestra una pantalla de bienvenida institucional a pantalla completa.
 - **Comportamiento:**
+  - En una carga exitosa, el splash inicial permanece visible al menos cuatro segundos desde el inicio de la consulta; una red lenta puede prolongarlo. Los errores aparecen tan pronto como se detectan.
   - Despliega el isotipo curricular provisional (escudo y libro académico en SVG MEP · DDC 2027), spinner de doble anillo giratorio y leyendas oficiales.
   - En caso de falla en la conexión (error 404, 500 o caída de red), conmuta automáticamente a una vista de contingencia con mensaje amigable y botón **"Reintentar conexión"**.
 
 ### RF-03: Búsqueda Libre Predictiva en Tiempo Real
 - **Descripción:** Barra de búsqueda predictiva ubicada en la barra de herramientas principal.
 - **Comportamiento:**
-  - Filtra instantáneamente por coincidencia insensible a mayúsculas, minúsculas y tildes sobre: *Asignatura*, *Oferta Educativa*, *Grado* y *Nombre de Archivos*.
+  - Filtra instantáneamente por coincidencia insensible a mayúsculas y minúsculas sobre *Asignatura*, *Oferta Educativa*, *Grado* y los nombres de **todos** los archivos de cada registro. Una coincidencia en cualquier archivo conserva la fila completa y todos sus chips.
   - Actualiza de forma reactiva el contador de registros encontrados y recalcula la paginación.
 
 ### RF-04: Filtros Multidimensionales en Cabeceras de Columna (`ColumnFilter`)
 - **Descripción:** Menús popover flotantes integrados en los encabezados `<th>` de las columnas *Oferta Educativa*, *Asignatura* y *Grado*.
 - **Comportamiento:**
+  - Las opciones de *Oferta Educativa*, *Asignatura / Área* y *Grado / Subárea* se presentan alfabéticamente por su nombre visible, según el idioma español.
   - Operación en modo **borrador (draft)**: El usuario puede marcar/desmarcar opciones sin alterar la tabla hasta que presione explícitamente el botón **"Aplicar Filtro"**.
   - Opciones de acción rápida: Botones para **"Marcar todas"**, **"Desmarcar todas"** y **"Cancelar"**.
   - Buscador interno dentro del popover para listas largas de opciones.
   - Indicador visual destacado en el encabezado de la columna cuando tiene un filtro activo.
 
-### RF-05: Descarga Multi-Archivo Híbrida y Secuencial
-- **Descripción:** Flexibilidad total para descarga unitaria o en lote de todos los documentos asociados a una asignatura.
+### RF-05: Descarga individual desde el catálogo
+- **Descripción:** Cada documento se descarga desde su chip de archivo.
 - **Comportamiento:**
-  - **Descarga en Lote (Botón de Acción Principal):** Al presionar el botón azul zafiro de la fila, se descargan secuencialmente todos los archivos ZIP vinculados a esa asignatura con un intervalo de **350 ms** entre descargas para evitar bloqueos del navegador web. Muestra un badge numérico si hay más de 1 archivo.
-  - **Descarga Unitaria por Chip:** Cada etiqueta amarilla en la columna *Archivos* es un botón clickeable independiente que dispara la descarga exclusiva de ese archivo específico.
-  - Cada evento de descarga incrementa el contador de métricas del registro y lo persiste en `localStorage`.
-
-### RF-06: Persistencia Ligera de Métricas de Descarga
-- **Descripción:** Almacenamiento local en el navegador exclusivo para registrar las descargas docentes.
-- **Comportamiento:**
-  - Clave en `localStorage`: `mep-ddc-planes-2027-downloads`.
-  - Estructura: Diccionario plano `{ [id]: numeroDescargas }`.
-  - Migración automática retrocompatible: Si el cliente posee datos en la clave antigua `mep-ddc-planes-2027`, se migran los contadores y se purga el almacenamiento obsoleto para no guardar catálogos pesados en el cliente.
+  - **Descarga desde la tabla:** La tabla presenta cuatro columnas (*Oferta Educativa*, *Asignatura*, *Grado* y *Archivos*). Cada chip de la columna *Archivos* descarga exclusivamente el archivo seleccionado. No se muestran columnas de *Descargas* ni *Acción*.
 
 ### RF-07: Paginador Seguro con Ventana Deslizante
 - **Descripción:** Controles de navegación en tabla con selector de filas por página (`15`, `20`, `50`, `Todos`).
@@ -97,12 +96,6 @@ Proveer a todo el cuerpo docente de Costa Rica un canal institucional centraliza
   - Ventana deslizante matemática de 5 páginas adyacentes a la actual.
   - Botones de salto rápido: **« Primero**, **‹ Anterior**, **Siguiente ›** y **Último »**.
   - Generación de claves DOM únicas (`pag-btn-${pNum}`) para evitar duplicación de nodos y errores de renderizado.
-
-### RF-08: Podio Dinámico "Top de Descargas"
-- **Descripción:** Sección visual que rankea en tiempo real los planeamientos con mayor demanda.
-- **Comportamiento:**
-  - Ordena de mayor a menor según el número de descargas.
-  - Estado vacío (*Zero State*): Si el total de descargas es 0, despliega un mensaje motivacional docente invitando a explorar los planes.
 
 ### RF-09: Soporte Nativo de Temas Claro / Oscuro
 - **Descripción:** Selector de modo en el encabezado con conmutación fluida de clases Tailwind en `<html>`.
@@ -112,7 +105,6 @@ Proveer a todo el cuerpo docente de Costa Rica un canal institucional centraliza
 
 ### RF-10: Modales Institucionales
 - **Acerca de (`AboutModal.jsx`):** Muestra el contexto normativo, créditos institucionales de la DDC y directrices del CSE.
-- **Mantenimiento y Reinicio (`ResetConfirmModal.jsx`):** Modal de confirmación con doble advertencia para restablecer contadores de descarga a cero absoluto.
 
 ---
 
@@ -156,17 +148,13 @@ interface PlaneamientoCurricular2027 {
   archivos: ArchivoCurricular[]; // Lista de todos los archivos disponibles para esta materia
   archivoPrincipal: string;    // Nombre del archivo representativo primario
   rutaDescarga: string;        // Ruta web de descarga del archivo principal
-  descargas: number;           // Contador local de descargas (por defecto 0)
   vigencia: string;            // Ciclo de vigencia oficial ("2027")
 }
 ```
 
 ### 4.2 Almacenamiento en `localStorage`
 
-1. **Descargas:**
-   - **Clave:** `mep-ddc-planes-2027-downloads`
-   - **Valor:** `{ [id: string]: number }` (Ej: `{"DDC-2027-001": 5, "DDC-2027-015": 2}`)
-2. **Tema Visual:**
+1. **Tema Visual:**
    - **Clave:** `mep-theme`
    - **Valor:** `"light"` | `"dark"`
 

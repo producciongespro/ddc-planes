@@ -16,7 +16,6 @@ const mockPlanes = Array.from({ length: 45 }, (_, i) => ({
   ],
   archivoPrincipal: `Plan_${i}.zip`,
   rutaDescarga: `/plan_${i}.zip`,
-  descargas: i * 2,
   vigencia: '2027'
 }));
 
@@ -109,7 +108,29 @@ describe('Suite 2: GeneralTable (Paginación Matemática y Filtros)', () => {
     });
   });
 
-  it('TEST-17: Botón de descarga de fila invoca a onDownload con el objeto del planeamiento', () => {
+  it.each(['s1', 'S2'])('encuentra el registro por el archivo %s y conserva ambos chips', (texto) => {
+    const planeamiento = {
+      ...mockPlanes[0],
+      asignatura: 'Español',
+      grado: 'Octavo Año (8°)',
+      archivoPrincipal: 'plan-espanol-octavo-s1.zip',
+      archivos: [
+        { nombre: 'plan-espanol-octavo-s1.zip', tipo: 'ZIP', ruta: '/s1.zip', tamanoLegible: '1 KB' },
+        { nombre: 'plan-espanol-octavo-s2.zip', tipo: 'ZIP', ruta: '/s2.zip', tamanoLegible: '1 KB' }
+      ]
+    };
+    render(<GeneralTable planes={[planeamiento]} filtros={{ ...defaultFiltros, texto }} onDownload={vi.fn()} onFiltrosChange={vi.fn()} onResetFiltros={vi.fn()} />);
+
+    expect(screen.getByText('Español')).toBeInTheDocument();
+    expect(screen.getAllByTitle(/Descargar archivo individual:/i)).toHaveLength(2);
+  });
+
+  it('tolera un registro sin archivos al buscar por asignatura', () => {
+    render(<GeneralTable planes={[{ ...mockPlanes[0], archivos: null, archivoPrincipal: '' }]} filtros={{ ...defaultFiltros, texto: 'Musical' }} onDownload={vi.fn()} onFiltrosChange={vi.fn()} onResetFiltros={vi.fn()} />);
+    expect(screen.getByText('Sin archivos')).toBeInTheDocument();
+  });
+
+  it('TEST-17: La tabla tiene cuatro columnas y el chip descarga el archivo seleccionado', () => {
     const downloadMock = vi.fn();
     render(
       <GeneralTable
@@ -121,11 +142,12 @@ describe('Suite 2: GeneralTable (Paginación Matemática y Filtros)', () => {
       />
     );
 
-    const downloadButtons = screen.getAllByRole('button', { name: /Descargar paquete oficial:/i });
-    expect(downloadButtons.length).toBeGreaterThan(0);
-
+    expect(screen.getAllByRole('columnheader')).toHaveLength(4);
+    expect(screen.queryByRole('columnheader', { name: 'Descargas' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Acción' })).not.toBeInTheDocument();
+    const downloadButtons = screen.getAllByTitle(/Descargar archivo individual:/i);
     fireEvent.click(downloadButtons[0]);
     expect(downloadMock).toHaveBeenCalledTimes(1);
-    expect(downloadMock).toHaveBeenCalledWith(mockPlanes[0]);
+    expect(downloadMock).toHaveBeenCalledWith(mockPlanes[0], mockPlanes[0].archivos[0]);
   });
 });

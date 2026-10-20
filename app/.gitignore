@@ -12,7 +12,6 @@ node_modules/
 dist/
 dist-ssr/
 *.local
-public/ddc-planeamientos/
 
 # System and editor files
 .DS_Store

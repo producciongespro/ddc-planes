@@ -17,6 +17,11 @@
 
 ## 1. Propósito y Filosofía
 
+La experiencia vigente presenta únicamente el catálogo filtrable y sus chips de
+descarga. Las estadísticas, el Top de Descargas y el reinicio de conteos fueron
+retirados por decisión del sponsor. La cantidad histórica de pruebas de este
+documento debe leerse junto con el resultado actual de `npm test`.
+
 Garantizar que **ningún error humano, degradación visual, corrupción de caracteres o falla arquitectónica pueda llegar jamás al repositorio en GitHub ni a producción**. 
 
 Cada solicitud de commit y sincronización debe superar obligatoriamente una batería de **3 Puertas de Calidad en Cascada** ejecutada por los subagentes y herramientas del arnés antes de realizar cualquier cambio en el control de versiones.
@@ -54,7 +59,7 @@ Cada solicitud de commit y sincronización debe superar obligatoriamente una bat
   │  - React 19 Enterprise Error Boundary (Tolerancia a UI)     │
   │  - WCAG 2.4.1 Skip Link accesible a catálogo principal      │
   │  - Resiliencia de red y Splash Screen con reintento         │
-  │  - Persistencia de descargas y paginador matemático         │
+  │  - Descarga individual y paginador matemático               │
   │  Comando: `npm test`                                        │
   └────────────────────────────┬────────────────────────────────┘
                                │ (Superado al 100% ✅)

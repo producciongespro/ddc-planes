@@ -3,12 +3,34 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 import { GeneralTable } from '../components/GeneralTable';
-import { saveDownloadsToStorage, fetchPlanesCatalog, DOWNLOADS_STORAGE_KEY } from '../data/planes2027Data';
 
 describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+  });
+
+  it('El catálogo es la única sección y descargar un chip no registra estadísticas', async () => {
+    const archivo = { nombre: 'plan.zip', tipo: 'ZIP', ruta: '/ddc-planeamientos/plan.zip', tamanoLegible: '1 KB' };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{
+        id: 'DDC-2027-001', ofertaNombre: 'Educación Preescolar',
+        asignatura: 'Matemática', grado: 'Transición', archivos: [archivo]
+      }]
+    });
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    render(<App />);
+    const chip = await screen.findByTitle(/Descargar archivo individual: plan.zip/i);
+    expect(screen.queryByText(/Top de Descargas Docentes/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Reiniciar datos|Reiniciar descargas/i })).not.toBeInTheDocument();
+    fireEvent.click(chip);
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('mep-ddc-planes-2027-downloads')).toBeNull();
+    expect(localStorage.getItem('mep-ddc-planes-2027')).toBeNull();
+    clickSpy.mockRestore();
   });
 
   it('CHAOS-01: Caída abrupta de red (Failed to fetch / Offline) muestra contingencia sin pantalla blanca', async () => {
@@ -51,7 +73,6 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
           archivos: [{ nombre: 'Plan.zip', tipo: 'ZIP', ruta: '/p.zip', tamanoBytes: 500, tamanoLegible: '500 B' }],
           archivoPrincipal: 'Plan.zip',
           rutaDescarga: '/p.zip',
-          descargas: 0,
           vigencia: '2027'
         }
       ]
@@ -104,28 +125,6 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
     expect(errorDetails).toBeInTheDocument();
   });
 
-  it('CHAOS-06: Saturación de localStorage (QuotaExceededError) no bloquea la app ni las descargas', () => {
-    // Simular que el navegador del docente tiene el almacenamiento al 100%
-    const quotaError = new DOMException('The quota has been exceeded.', 'QuotaExceededError');
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw quotaError;
-    });
-
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    const mockPlanes = [{ id: 'DDC-2027-001', descargas: 5 }];
-
-    // No debe lanzar excepción no controlada
-    expect(() => {
-      saveDownloadsToStorage(mockPlanes);
-    }).not.toThrow();
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Error guardando descargas'),
-      expect.any(DOMException)
-    );
-  });
-
   it('CHAOS-07: GeneralTable renderiza de forma tolerante ante registros con datos nulos o corruptos', () => {
     const corruptPlanes = [
       {
@@ -139,7 +138,6 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
         archivos: null, // Lista de archivos nula
         archivoPrincipal: null,
         rutaDescarga: '',
-        descargas: undefined,
         vigencia: null
       },
       {
@@ -173,8 +171,7 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
         ofertaNombre: 'I y II Ciclos (Primaria)',
         asignatura: 'Matemática',
         grado: '1° Año',
-        archivos: [{ nombre: 'M.zip', tipo: 'ZIP', ruta: '/m.zip', tamanoBytes: 100, tamanoLegible: '100 B' }],
-        descargas: 0
+        archivos: [{ nombre: 'M.zip', tipo: 'ZIP', ruta: '/m.zip', tamanoBytes: 100, tamanoLegible: '100 B' }]
       }
     ];
 
@@ -190,7 +187,7 @@ describe('Suite 6: chaos (Arnés de Caos y Resiliencia Extrema)', () => {
       />
     );
 
-    const downloadBtn = screen.getByRole('button', { name: /Descargar paquete oficial:/i });
+    const downloadBtn = screen.getByTitle(/Descargar archivo individual:/i);
 
     // Simular 8 clics ultra rápidos (docente impaciente)
     for (let i = 0; i < 8; i++) {
