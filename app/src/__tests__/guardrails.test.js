@@ -161,7 +161,7 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
     });
   });
 
-  it('TEST-27: Verificación de Existencia Física 100% de los 197 archivos ZIP en disco', () => {
+  it('TEST-27: Verificación de existencia física de archivos principales y anexos', () => {
     const content = fs.readFileSync(catalogPath, 'utf8');
     const catalog = JSON.parse(content);
 
@@ -170,6 +170,9 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
     catalog.forEach((item) => {
       const physicalPath = path.join(publicDir, item.rutaDescarga);
       expect(fs.existsSync(physicalPath)).toBe(true);
+      (item.archivos || []).forEach((archivo) => {
+        expect(fs.existsSync(path.join(publicDir, archivo.ruta))).toBe(true);
+      });
     });
   });
 
@@ -234,7 +237,10 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
     const physicalFiles = getFilesRecursively(baseFilesDir).map((p) =>
       path.relative(publicDir, p).replace(/\\/g, '/')
     );
-    const catalogFiles = catalog.map((c) => c.rutaDescarga.replace(/^\//, ''));
+    const catalogFiles = catalog.flatMap((c) =>
+      (c.archivos || []).map((archivo) => archivo.ruta.replace(/^\//, ''))
+    );
+    const primaryFiles = catalog.map((c) => c.rutaDescarga.replace(/^\//, ''));
 
     const physicalSet = new Set(physicalFiles);
     const catalogSet = new Set(catalogFiles);
@@ -244,6 +250,8 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
 
     // Enlaces rotos: están en el JSON pero el archivo no existe físicamente
     const rotos = catalogFiles.filter((f) => !physicalSet.has(f));
+    const principalesSinAnexo = primaryFiles.filter((f) => !catalogSet.has(f));
+    const referenciasDuplicadas = catalogFiles.filter((f, index) => catalogFiles.indexOf(f) !== index);
 
     expect(
       huerfanos,
@@ -255,7 +263,10 @@ describe('Suite 4: guardrails (Auditoría Automatizada de Seguridad y Arnés)', 
       `[GUARDRAIL ERROR - ENLACES ROTOS DETECTADOS]\nLos siguientes registros en ddc-planeamientos.json no existen físicamente en disco:\n${rotos.join('\n')}`
     ).toEqual([]);
 
-    expect(physicalFiles.length).toBe(catalog.length);
+    expect(principalesSinAnexo, 'Las rutas principales deben aparecer en archivos[].ruta').toEqual([]);
+    expect(referenciasDuplicadas, 'Cada ZIP debe figurar una sola vez en archivos[]').toEqual([]);
+
+    expect(physicalFiles.length).toBe(catalogFiles.length);
   });
 });
 

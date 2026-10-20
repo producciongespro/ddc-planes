@@ -2715,15 +2715,22 @@
     "rutaRelativa": "tercer-ciclo-y-educacion-diversificada/espanol/octavo",
     "archivos": [
       {
-        "nombre": "plan-espanol-octavo.zip",
+        "nombre": "plan-espanol-octavo-s1.zip",
         "tipo": "ZIP",
-        "ruta": "/ddc-planeamientos/tercer-ciclo-y-educacion-diversificada/espanol/octavo/plan-espanol-octavo.zip",
+        "ruta": "/ddc-planeamientos/tercer-ciclo-y-educacion-diversificada/espanol/octavo/plan-espanol-octavo-s1.zip",
+        "tamanoBytes": 1078,
+        "tamanoLegible": "1.1 KB"
+      },
+      {
+        "nombre": "plan-espanol-octavo-s2.zip",
+        "tipo": "ZIP",
+        "ruta": "/ddc-planeamientos/tercer-ciclo-y-educacion-diversificada/espanol/octavo/plan-espanol-octavo-s2.zip",
         "tamanoBytes": 1078,
         "tamanoLegible": "1.1 KB"
       }
     ],
-    "archivoPrincipal": "plan-espanol-octavo.zip",
-    "rutaDescarga": "/ddc-planeamientos/tercer-ciclo-y-educacion-diversificada/espanol/octavo/plan-espanol-octavo.zip",
+    "archivoPrincipal": "plan-espanol-octavo-s1.zip",
+    "rutaDescarga": "/ddc-planeamientos/tercer-ciclo-y-educacion-diversificada/espanol/octavo/plan-espanol-octavo-s1.zip",
     "descargas": 0,
     "vigencia": "2027"
   },

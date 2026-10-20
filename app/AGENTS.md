@@ -11,6 +11,11 @@ Aplicación web profesional oficial tipo Repositorio Curricular Digital para que
 - **Excepción de Git:** Las operaciones de Git (`commit`, `push`, `pull`, `sync`) se ejecutan desde la raíz `ddc-planes-digitales`.
 - **Regla Estricta de Control de Versiones:** NUNCA ejecutar `git commit` ni sincronizar (`git push`) de forma automática. Siempre implementar y verificar en local, y consultar/esperar la instrucción expresa de Chris antes de commitear y sincronizar.
 
+## Coordinación de agentes de desarrollo
+- **Agentes de desarrollo:** El agente principal coordina `implementador`, `qa_tester` y `guardrail_auditor`, registrados en `.codex/config.toml` de la raíz con perfiles en `app/agents/`.
+- **Protocolo obligatorio:** Lea `app/docs/agents.md`; delegue trabajo independiente con un único escritor por archivo, espere informes y consolide evidencia. QA y auditor no editan; los subagentes no delegan recursivamente.
+- **Excepción de metadatos:** `AGENTS.md` y `.codex/config.toml` en la raíz son configuración de desarrollo; el código del sitio y la SSOT permanecen en `app/`.
+
 ## Nomenclatura de Versión Institucional
 - Formato oficial de versión: `[versión].[liberación].[compilado]` (ej. `1.0.1`).
   - **Versión (Mayor):** `1`

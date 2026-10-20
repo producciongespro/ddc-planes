@@ -1,0 +1,16 @@
+# Perfiles del proyecto; heredan modelo y permisos de la sesión.
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3
+
+[agents.implementador]
+description = "Implementa cambios en archivos asignados por el orquestador."
+config_file = "../app/agents/implementador.toml"
+
+[agents.qa_tester]
+description = "Revisa comportamiento y ejecuta pruebas sin editar fuentes."
+config_file = "../app/agents/qa-tester.toml"
+
+[agents.guardrail_auditor]
+description = "Audita integridad, arquitectura y guardrails sin editar archivos."
+config_file = "../app/agents/guardrail-auditor.toml"

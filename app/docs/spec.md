@@ -19,6 +19,22 @@
 
 ## 1. Contexto Institucional y Propósito
 
+### Coordinación de desarrollo
+El contrato operativo de agentes está en `app/docs/agents.md`. El agente principal
+coordina tres perfiles persistentes (`implementador`, `qa_tester`,
+`guardrail_auditor`) registrados en `.codex/config.toml` y definidos en `app/agents/`.
+Esta configuración es metadato de desarrollo fuera del código de producción.
+La delegación usa las herramientas del host, hereda permisos y modelo y exige
+asignación de archivos, espera de resultados y consolidación de evidencia.
+No introduce backend ni procesos permanentes en el sitio.
+
+### Integridad de archivos del catálogo
+Cada entrada de `archivos[]` debe corresponder a un archivo físico único. La
+`rutaDescarga` principal debe figurar entre esas entradas. La auditoría compara
+todos los archivos del árbol público con todos los anexos del JSON y rechaza
+archivos huérfanos, enlaces rotos y referencias duplicadas. Un registro puede
+tener varios ZIP sin aumentar el número de planeamientos.
+
 El **Repositorio Curricular Digital 2027** es una plataforma web oficial desarrollada para el Ministerio de Educación Pública de Costa Rica (MEP), concebida bajo la supervisión directa de la Dirección de Desarrollo Curricular (DDC).
 
 ### 1.1 Objetivo General
